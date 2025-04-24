@@ -1,0 +1,12 @@
+flask
+pydub
+torchaudio
+funasr
+whisper
+Flask-SQLAlchemy
+pandas
+transformers
+torch
+scikit-learn
+openai
+SQLAlchemy
