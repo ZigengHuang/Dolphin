@@ -1,6 +1,0 @@
-E:/00Graduate/Dolphin/代码/Erlangshen-SimCSE-110M-Chinese
-E:/00Graduate/Dolphin/数据/rag-2024.12.29/knowledge.xlsx
-E:/00Graduate/Dolphin/数据/paraformer/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch
-E:/00Graduate/Dolphin/数据/音频
-E:/00Graduate/Dolphin/数据/data
-sk-6a1723ee193a425e83620003f6d389b0
