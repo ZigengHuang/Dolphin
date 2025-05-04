@@ -274,7 +274,7 @@ class DolphinCore:
         try:
             headers = {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer sk-yhGP21PPtDMiB8ptAow3zDn3pHQk46j5D2N34iXyspqvfCOG',
+                'Authorization': 'Bearer /api-key', #fill in your own api-key
             }
 
             # Build message format
