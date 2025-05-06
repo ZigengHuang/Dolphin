@@ -48,21 +48,7 @@ Edit config in file dolphin.py:
 ## Quick Start
 Basic Usage:
 ~~~
-from dolphin_core import DolphinCore
-
-# Initialize system
-dolphin = DolphinCore(config_path="./config.json")
-
-# Process conversation
-results = dolphin.process_conversation(
-    audio_path="patient_01.webm",
-    clinical_context="Type 2 Diabetes Follow-up"
-)
-
-# Export report
-print(f"Transcription: {results['transcription']}")
-print(f"Full analysis:\n{results['model_a_output']}")
-print(f"Final response:\n{results['model_b_response']}")
+python dolphin.py
 ~~~
 
 Webdemo: 
