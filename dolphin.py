@@ -355,10 +355,10 @@ class DolphinCore:
 if __name__ == "__main__":
     # Configuration parameters
     config = {
-        'RAG_MODEL_PATH': 'E:/00Graduate/Dolphin/代码/Erlangshen-SimCSE-110M-Chinese',
-        'RAG_KNOWLEDGE_PATH': 'E:/00Graduate/Dolphin/数据/rag-2024.12.29/knowledge.xlsx',
-        'AUDIO_MODEL_PATH': 'E:/00Graduate/Dolphin/数据/paraformer/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch',
-        'AUDIO_SAVE_PATH': 'E:/00Graduate/Dolphin/数据/音频'
+        'RAG_MODEL_PATH': '',
+        'RAG_KNOWLEDGE_PATH': '',
+        'AUDIO_MODEL_PATH': '',
+        'AUDIO_SAVE_PATH': ''
     }
     
     # Initialize core module
