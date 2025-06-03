@@ -1,8 +1,8 @@
 # Dolphin 
   Dolphin is a bimodal large language model (LLM) designed for intra-hospital patient education, integrating audio and text inputs to enhance emotional and semantic alignment in medical communication. Its architecture comprises three core components:
-  Multimodal Encoder: Fuses verbal (text) and non-verbal (audio) cues via cross-attention and gated fusion to generate unified contextual representations.
-  Interpretable Reasoning Decoder: Performs joint emotion classification (7 categories: neutral, happiness, sadness, surprise, fear, anger, disgust) and semantic interpretation, producing structured reasoning paths (emotion analysis → semantic intent → response guidelines).
-  Clinical Responder: Synthesizes responses by integrating decoder outputs with site-specific knowledge via a retrieval-augmented generation (RAG) framework.
+	Multimodal Encoder: Fuses verbal (text) and non-verbal (audio) cues via cross-attention and gated fusion to generate unified contextual representations.
+ 	Interpretable Reasoning Decoder: Performs joint emotion classification (7 categories: neutral, happiness, sadness, surprise, fear, anger, disgust) and semantic interpretation, producing structured reasoning paths (emotion analysis → semantic intent → response guidelines).
+  	Clinical Responder: Synthesizes responses by integrating decoder outputs with site-specific knowledge via a retrieval-augmented generation (RAG) framework.
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
