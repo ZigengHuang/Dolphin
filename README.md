@@ -178,4 +178,7 @@ If using this work in academic research, please cite:
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Contact
-For research collaborations or technical inquiries:
+For research collaborations or technical inquiries, please feel free to contact us for any questions or comments: 
+Zigeng Huang, E-mail: yuuko_huang@pumc.edu.cn; 
+Erping Long, E-mail: erping.long@ibms.pumc.edu.cn;
+Peixing Wan, E-mail: peixing@bjmu.edu.cn.
