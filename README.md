@@ -40,16 +40,16 @@ Three-Stage Framework:
 #### Semantic Interpretation: Identifies communicative intent (e.g., “hesitation about treatment,” “request for clarification”) .
 #### Response Guidelines: Provides tailored strategies (e.g., “use reassuring tone,” “address underlying anxiety about side effects”) .
 ### Clinical Adaptability and Knowledge Integration
-Department-Specific Customization: Supports 6 clinical departments (pediatrics, radiology, endoscopy, etc.), with RAG-driven knowledge bases (e.g., vaccination protocols, pre-procedure counseling) .
-Ethical Compliance: Aligns with Declaration of Helsinki principles, ensuring data anonymization, encryption, and GDPR-compliant explainability .
+#### Department-Specific Customization: Supports 6 clinical departments (pediatrics, radiology, endoscopy, etc.), with RAG-driven knowledge bases (e.g., vaccination protocols, pre-procedure counseling) .
+#### Ethical Compliance: Aligns with Declaration of Helsinki principles, ensuring data anonymization, encryption, and GDPR-compliant explainability .
 ### Efficient Deployment and Scalability
-Lightweight Architecture: Runs on low-power hardware (GPU ≥2060 with 6GB VRAM, 8GB RAM), achieving 11.1 ± 3.3-second response latency .
-User-Friendly Tools: Web-based interface (Flask) and API compatible with EMR systems, enabling seamless integration into clinical workflows .
+#### Lightweight Architecture: Runs on low-power hardware (GPU ≥2060 with 6GB VRAM, 8GB RAM), achieving 11.1 ± 3.3-second response latency .
+#### User-Friendly Tools: Web-based interface (Flask) and API compatible with EMR systems, enabling seamless integration into clinical workflows .
 ### Rigorous Empirical Validation
 Double-Blinded RCT Results:
-	Patient Outcomes: 23.7% higher satisfaction, 17.2% higher treatment acceptance, and 15.3% stronger willingness to continue care .
-	Educator Feedback: 84.3% willingness to continue using Dolphin, vs. 50.5% for text-based LLMs (P=1.9×10^−16) .
-	Large-Scale Retrospective Analysis: Evaluated on 64,200 utterances from 16,583 cases, demonstrating cross-departmental effectiveness .
+#### Patient Outcomes: 23.7% higher satisfaction, 17.2% higher treatment acceptance, and 15.3% stronger willingness to continue care .
+#### Educator Feedback: 84.3% willingness to continue using Dolphin, vs. 50.5% for text-based LLMs (P=1.9×10^−16) .
+#### Large-Scale Retrospective Analysis: Evaluated on 64,200 utterances from 16,583 cases, demonstrating cross-departmental effectiveness .
 
 ## Installation
 
