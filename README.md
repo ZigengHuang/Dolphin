@@ -137,7 +137,7 @@ def call_chatanywhere(self, input_text, context=[]):
             messages.append({"role": "user", "content": input_text})
 
             data = {
-                "model": "gpt-4o-mini", #model name, such as "gpt-4o", "deepseek-chat", "deepseek-v3", etc.
+                "model": "gpt-4o-mini", #model name, such as "gpt-4o", "deepseek-chat", "deepseek-r1", etc.
                 "messages": messages,
                 "temperature": 0.7
             }
