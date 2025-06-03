@@ -26,15 +26,19 @@ Synthesizes responses by integrating decoder outputs with site-specific knowledg
 
 ### Multimodal Emotional and Semantic Modeling
 Inputs: Supports audio (16kHz mono WEBM/WAV, ≤5 minutes, SNR ≥40dB) and text, extracting:
-	Audio features: CLAP-based verbal embeddings + 88-dimensional eGeMAPS acoustic features (pitch, energy, speech tempo) .
-	Text features: 512-dimensional CLAP embeddings, fused with audio via bidirectional cross-attention .
-	Emotion Classification: Achieves 80.9–90.3% accuracy across 7 emotion categories, with fear (90.3%) and anger (89.5%) showing highest precision .
-	Semantic Alignment: 84.9% of responses rated “consistent” or “extremely consistent” with patient intent (expert panel) .
+#### Audio features: 
+CLAP-based verbal embeddings + 88-dimensional eGeMAPS acoustic features (pitch, energy, speech tempo) .
+#### Text features: 
+512-dimensional CLAP embeddings, fused with audio via bidirectional cross-attention .
+#### Emotion Classification: 
+Achieves 80.9–90.3% accuracy across 7 emotion categories, with fear (90.3%) and anger (89.5%) showing highest precision .
+#### Semantic Alignment: 
+84.9% of responses rated “consistent” or “extremely consistent” with patient intent (expert panel) .
 ### Structured Reasoning Paths for Interpretability
 Three-Stage Framework:
-	Emotion Interpretation: Outputs top 3 emotions with confidence scores (e.g., “fear: 82%, sadness: 15%”) .
-	Semantic Interpretation: Identifies communicative intent (e.g., “hesitation about treatment,” “request for clarification”) .
-	Response Guidelines: Provides tailored strategies (e.g., “use reassuring tone,” “address underlying anxiety about side effects”) .
+#### Emotion Interpretation: Outputs top 3 emotions with confidence scores (e.g., “fear: 82%, sadness: 15%”) .
+#### Semantic Interpretation: Identifies communicative intent (e.g., “hesitation about treatment,” “request for clarification”) .
+#### Response Guidelines: Provides tailored strategies (e.g., “use reassuring tone,” “address underlying anxiety about side effects”) .
 ### Clinical Adaptability and Knowledge Integration
 Department-Specific Customization: Supports 6 clinical departments (pediatrics, radiology, endoscopy, etc.), with RAG-driven knowledge bases (e.g., vaccination protocols, pre-procedure counseling) .
 Ethical Compliance: Aligns with Declaration of Helsinki principles, ensuring data anonymization, encryption, and GDPR-compliant explainability .
