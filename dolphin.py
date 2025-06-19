@@ -346,8 +346,8 @@ class DolphinCore:
         results['transcription'] = text_input
         results['emotions'] = emotions
         results['knowledge'] = knowledge
-        results['model_a_output'] = model_a_output
-        results['model_b_response'] = model_b_output
+        results['structured reasoning path'] = model_a_output
+        results['dolphin response'] = model_b_output
         
         return results
 
