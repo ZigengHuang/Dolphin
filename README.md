@@ -66,7 +66,7 @@ pip install -r requirements.txt
 Edit config in file dolphin.py:
 ~~~
     config = {
-        'RAG_MODEL_PATH': 'PATH',/
+        'RAG_MODEL_PATH': 'PATH',
         'RAG_KNOWLEDGE_PATH': 'PATH',
         'AUDIO_MODEL_PATH': 'PATH',
         'AUDIO_SAVE_PATH': 'PATH'
