@@ -12,7 +12,7 @@ Synthesizes responses by integrating structured reasoning paths with domain-spec
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Table of Contents
-- [Features](#features)
+- [Overview](#overview)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Quick Start](#quick-start)
@@ -22,7 +22,7 @@ Synthesizes responses by integrating structured reasoning paths with domain-spec
 - [License](#license)
 - [Contact](#contact)
 
-## Features
+## Overview
 
 ### Multimodal Emotional and Semantic Modeling
 Inputs: Supports audio (16kHz mono WEBM/WAV, ≤5 minutes, SNR ≥40dB) and text, extracting:
@@ -40,7 +40,7 @@ Three-Stage Framework:
 #### Semantic Interpretation: Identifies communicative intent (e.g., “hesitation about treatment,” “request for clarification”) .
 #### Response Guidelines: Provides tailored strategies (e.g., “use reassuring tone,” “address underlying anxiety about side effects”) .
 ### Clinical Adaptability and Knowledge Integration
-#### Department-Specific Customization: Supports 6 clinical departments (pediatrics, radiology, endoscopy, etc.), with RAG-driven knowledge bases (e.g., vaccination protocols, pre-procedure counseling) .
+#### Domain-Specific Customization: Supports 6 clinical departments (pediatrics, radiology, endoscopy, etc.), with RAG-driven knowledge bases (e.g., vaccination protocols, pre-procedure counseling) .
 #### Ethical Compliance: Aligns with Declaration of Helsinki principles, ensuring data anonymization, encryption, and GDPR-compliant explainability .
 ### Efficient Deployment and Scalability
 #### Lightweight Architecture: Runs on low-power hardware (GPU ≥2060 with 6GB VRAM, 8GB RAM), achieving 11.1 ± 3.3-second response latency .
