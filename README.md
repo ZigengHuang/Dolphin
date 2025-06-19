@@ -25,7 +25,7 @@ Synthesizes responses by integrating structured reasoning paths with domain-spec
 ## Overview
 
 ### Multimodal Emotional and Semantic Modeling
-Inputs: Supports audio (16kHz mono WEBM/WAV, ≤5 minutes, SNR ≥40dB) and text, extracting:
+Inputs: Supports audio (16kHz mono WEBM/WAV, SNR ≥40dB) and text, extracting:
 #### Audio features: 
 CLAP-based verbal embeddings + 88-dimensional eGeMAPS acoustic features (pitch, energy, speech tempo) .
 #### Text features: 
@@ -90,7 +90,7 @@ After finishing deployment, you can try the webdemo on the local web page 127.0.
 Note: ffmpeg is required for this project.
 
 ## Data Preparation
-RAG Knowledge Base Format(.xlsx or .csv):
+RAG Knowledge Base Format (.xlsx or .csv):
 
 | Content|
 |--------|
@@ -105,7 +105,6 @@ Audio Requirements:
 | Format | WEBM/WAV |
 | Sample Rate | 16000 Hz |
 | Channels | Mono |
-| Duration | ≤5 minutes |
 | SNR | ≥40 dB |
 	
 ## API Documentation
