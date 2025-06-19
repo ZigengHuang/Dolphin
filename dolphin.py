@@ -346,8 +346,8 @@ class DolphinCore:
         results['transcription'] = text_input
         results['emotions'] = emotions
         results['knowledge'] = knowledge
-        results['structured reasoning path'] = model_a_output
-        results['dolphin response'] = model_b_output
+        results['model_a_output'] = model_a_output
+        results['model_b_output'] = model_b_output
         
         return results
 
@@ -374,5 +374,5 @@ if __name__ == "__main__":
     print("\nFinal results:")
     print(f"Transcription: {results['transcription']}")
     print(f"Emotion analysis: {results['emotions']}")
-    print(f"Model A analysis:\n{results['model_a_output']}")
-    print(f"Model B response:\n{results['model_b_response']}")
+    print(f"Structured reasoning path:\n{results['model_a_output']}")
+    print(f"Dolphin response:\n{results['model_b_response']}")
