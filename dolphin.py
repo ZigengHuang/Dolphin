@@ -45,7 +45,7 @@ class DolphinCore:
         """Load knowledge base"""
         print(f"Loading knowledge base from {self.config['RAG_KNOWLEDGE_PATH']}...")
         self.knowledge_df = pd.read_excel(self.config['RAG_KNOWLEDGE_PATH'])
-        self.knowledge = self.knowledge_df['内容'].tolist()
+        self.knowledge = self.knowledge_df['Content'].tolist()
         
     def precompute_knowledge_embeddings(self):
         """Precompute embeddings for knowledge base"""
