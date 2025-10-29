@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dolphin Demo</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #89cff0, #f3e6ff);
+        }
+
+        #sidebar {
+            min-width: 200px;
+            max-width: 300px;
+            width: auto;
+            height: 100vh;
+            padding: 20px;
+            background-color: #f1f1f1;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        #sidebar h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        #new-conversation-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #5b9bf3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        #new-conversation-btn:hover {
+            background-color: #4a8bd6;
+        }
+
+        #conversation-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        #conversation-list li {
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #conversation-list li:hover {
+            background-color: #e0e0e0;
+        }
+
+        #conversation-list li.active {
+            background-color: #d2e6ff;
+        }
+
+        .delete-btn {
+            background-color: #ff8c94;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background-color: #ff6b6b;
+        }
+
+        #chat-container {
+            flex-grow: 1;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            width: calc(100% - 490px); /* 调整宽度，留出右侧边栏的空间 */
+            margin-right: 450px; /* 与右侧边栏的宽度一致 */
+        }
+
+        #messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            padding: 12px 18px;
+            border-radius: 25px;
+            max-width: 75%;
+            word-wrap: break-word;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user {
+            background-color: #d2e6ff;
+            align-self: flex-end;
+        }
+
+        .assistant {
+            background-color: #dfffd6;
+            align-self: flex-start;
+        }
+
+        #input-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 14px;
+            font-size: 1rem;
+            border-radius: 25px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        #user-input:focus {
+            border-color: #5b9bf3;
+            box-shadow: 0 0 5px rgba(91, 155, 243, 0.8);
+        }
+
+        #send-btn, #record-btn,#doctor-record-btn,#background-record-btn  {
+            padding: 12px 18px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        #send-btn {
+            background-color: #5b9bf3;
+            color: white;
+        }
+
+        #record-btn {
+            background-color: #ff8c94;
+            color: white;
+        }
+
+        #doctor-record-btn {
+            background-color:rgb(151, 39, 105);
+            color: white;
+        }
+        #background-record-btn {
+            background-color:rgb(39, 156, 49);
+            color: white;
+        }
+
+        #send-btn:disabled, #record-btn:disabled,#doctor-record-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #send-btn:hover:not(:disabled), #record-btn:hover:not(:disabled),#doctor-record-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            background-color: #4a8bd6;
+        }
+
+        #right-sidebar {
+            width: 400px;
+            padding: 20px;
+            background-color: #f1f1f1;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* 使右侧边栏占满整个高度 */
+            position: fixed; /* 固定位置 */
+            right: 0; /* 固定在右侧 */
+            top: 0; /* 从顶部开始 */
+            overflow-y: auto; /* 允许内容滚动 */
+        }
+
+        #right-sidebar h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        #assistant-output, #rag-knowledge {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        
+
+        #rag-knowledge {
+            margin-bottom: 10px; /* 与其他框保持一致 */
+        }
+
+        .model-a-message {
+            padding: 12px 18px;
+            border-radius: 25px;
+            max-width: 75%;
+            word-wrap: break-word;
+            background-color: #ffcccc; /* 浅红色背景 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            align-self: flex-start; /* 靠左显示 */
+            margin-bottom: 10px; /* 与模型 B 的回复保持间距 */
+        }
+
+        .model-a-message strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .feedback-btn {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.2s ease;
+        }
+
+        .feedback-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .like-btn:hover {
+            color: #4caf50; /* 赞的绿色 */
+        }
+
+        .dislike-btn:hover {
+            color: #f44336; /* 踩的红色 */
+        }
+
+        #feedback-rating {
+            margin-top: 0px;
+            padding: 5px;
+            background-color: #333;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 20px; 
+            font-weight: bold; 
+        }
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        
+        .star-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+            cursor: pointer;
+        }
+        
+        .star {
+            font-size: 25px; /* 星星的默认大小 */
+            cursor: pointer;
+            color: #ccc; /* 默认颜色 */
+            transition: color 0.2s ease;
+        }
+        
+        .star-label {
+            font-size: 14px;
+            color: #fff; /* 文本标签的颜色 */
+        }
+
+        .star-rating:hover .star-label,
+        .star-rating:hover .star-container:hover::before {
+            display: block;
+        }
+
+        .star-label::before {
+            content: attr(data-label);
+        }
+
+        .star-rating:hover .star {
+            display: inline-block; /* 显示星星 */
+        }
+        
+        .star-rating:hover .star:hover {
+            display: inline-block;
+        }
+
+        .star:hover {
+            color: #ffcc00; /* 悬停时的颜色 */
+            transform: scale(1.2); /* 悬停时放大 */
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.8); /* 悬停时的阴影效果 */
+        }
+        
+        .star.active {
+            color: #ffcc00; /* 选中时的颜色 */
+            transform: scale(1.2); /* 选中时放大 */
+        }
+        
+        /* 患者满意度评分颜色 */
+        [data-rating-type="patient_satisfaction"] .star:hover,
+        [data-rating-type="patient_satisfaction"] .star.active {
+            color: #4CAF50; /* 绿色 */
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.8); /* 绿色阴影 */
+        }
+        
+        /* 医生满意度评分颜色 */
+        [data-rating-type="doctor_satisfaction"] .star:hover,
+        [data-rating-type="doctor_satisfaction"] .star.active {
+            color: #2196F3; /* 蓝色 */
+            text-shadow: 0 0 10px rgba(33, 150, 243, 0.8); /* 蓝色阴影 */
+        }
+        
+        /* 后续就医意愿评分颜色 */
+        [data-rating-type="follow_up_intention"] .star:hover,
+        [data-rating-type="follow_up_intention"] .star.active {
+            color: #FF9800; /* 橙色 */
+            text-shadow: 0 0 10px rgba(255, 152, 0, 0.8); /* 橙色阴影 */
+        }
+        
+        /* 医生使用负担评分颜色 */
+        [data-rating-type="doctor_burden"] .star:hover,
+        [data-rating-type="doctor_burden"] .star.active {
+            color: #F44336; /* 红色 */
+            text-shadow: 0 0 10px rgba(244, 67, 54, 0.8); /* 红色阴影 */
+        }
+
+        /* 改进建议部分样式 */
+        .feedback-suggestion {
+            margin-top: 10px;
+            padding-left: 15px;
+        }
+
+        #feedback-suggestion-input {
+            width: 80%;
+            height: 50px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 1rem;
+            background-color: #f9f9f9;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #feedback-suggestion-input:focus {
+            border-color: #5b9bf3;
+            box-shadow: 0 0 5px rgba(91, 155, 243, 0.8);
+            outline: none;
+        }
+
+        #submit-feedback-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #5b9bf3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        #submit-feedback-btn:hover {
+            background-color: #4a8bd6;
+            transform: translateY(-2px);
+        }
+
+        #submit-feedback-btn:active {
+            transform: translateY(0);
+        }
+
+        .rating-section {
+            padding-left: 15px;
+            font-size: 18px
+        }
+
+        #chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        #demographic-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #patient-age, #patient-gender {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        
+        #patient-name {
+            width: 120px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+
+        #patient-age {
+            width: 80px;
+        }
+        
+        #patient-gender {
+            width: 120px;
+        }
+
+        #audio-record-container {
+            display: flex;
+            gap: 0px;
+        }
+        
+        .patient-record-section,
+        .doctor-record-section,
+        .background-recording {
+            flex: 1;
+            padding: 10px;
+        }
+        
+        .patient-record-section h3,
+        .doctor-record-section h3,
+        .background-recording h3 {
+            margin: 10px;
+        }
+
+        #scene-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+        
+        .slider {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background-color: #5b9bf3;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+        
+        #toggle-switch.active .slider {
+            transform: translateX(30px);
+        }
+        
+        #scene-toggle span {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h3>对话列表</h3>
+        <div id="scene-toggle">
+            <span>门诊</span>
+            <div id="toggle-switch">
+                <div class="slider"></div>
+            </div>
+            <span>查房</span>
+        </div>
+        <button id="new-conversation-btn">新建对话</button>
+        <ul id="conversation-list"></ul>
+    </div>
+    <div id="chat-container">
+        <div id="chat-header">
+            <h1>Dolphin Demo</h1>
+            <div id="conversation-title" style="font-size: 20px; color: #ff0000;font-weight: bold;"></div>
+            <div id="demographic-input">
+                <input type="text" id="patient-name" placeholder="姓名">
+                <input type="number" id="patient-age" placeholder="年龄" min="0" max="120">
+                <select id="patient-gender">
+                    <option value="">选择性别</option>
+                    <option value="male">男</option>
+                    <option value="female">女</option>
+                </select>
+            </div>
+            <select id="dialogue-type-selector">
+                <option value="dolphin" selected>纯 Dolphin 对话</option>
+            </select>
+        </div>
+        <div id="messages"></div>
+        <div id="audio-record-container">
+            <div class="background-recording">
+                <h3>1.背景收集</h3>
+                <button id="background-record-btn">背景录制</button>
+            </div>
+            <div class="patient-record-section">
+                <h3>2.患者录音输入(需点击下方发送)</h3>
+                <button id="record-btn" disabled>开始录音</button>
+            </div>
+            <div class="doctor-record-section">
+                <h3>3.医生录音输入</h3>
+                <button id="doctor-record-btn" disabled>开始医生录音</button>
+            </div>
+        </div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="请输入内容" disabled>
+            <button id="send-btn" disabled>发送</button>
+        </div>
+    </div>
+    <div id="right-sidebar">
+        <h3>系统提示</h3>
+        <div id="assistant-output">等待系统提示...</div>
+        <h3 style="display: none;">相关知识</h3>
+        <div id="rag-knowledge" style="display: none;">等待相关知识...</div>
+        <div id="feedback-rating">
+            <div class="rating-section">
+                <p>患者满意度：</p>
+                <div class="star-rating" data-rating-type="patient_satisfaction">
+                    <div class="star-container">
+                        <span class="star-label">很不满意</span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="1">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="2">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="3">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="4">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="5">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star-label">很满意</span>
+                    </div>
+                </div>
+            </div>
+            <div class="rating-section">
+                <p>后续就医意愿：</p>
+                <div class="star-rating" data-rating-type="follow_up_intention">
+                    <div class="star-container">
+                        <span class="star-label">很不愿意</span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="1">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="2">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="3">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="4">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="5">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star-label">非常愿意</span>
+                    </div>
+                </div>
+            </div>
+            <div class="rating-section">
+                <p>诊疗方案是否容易理解：</p>
+                <div class="star-rating" data-rating-type="ease_of_understanding">
+                    <div class="star-container">
+                        <span class="star-label">完全不懂</span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="1">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="2">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="3">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="4">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="5">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star-label">非常易懂</span>
+                    </div>
+                </div>
+            </div>
+            <div class="rating-section">
+                <p>对于诊疗方案的接受程度：</p>
+                <div class="star-rating" data-rating-type="acceptance_of_treatment">
+                    <div class="star-container">
+                        <span class="star-label">无法接受</span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="1">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="2">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="3">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="4">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="5">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star-label">非常容易接受</span>
+                    </div>
+                </div>
+            </div>
+            <div class="rating-section">
+                <p>-----------------------------------</p>
+            </div>
+            <div class="rating-section">
+                <p>医生满意度：</p>
+                <div class="star-rating" data-rating-type="doctor_satisfaction">
+                    <div class="star-container">
+                    <span class="star-label">很不满意</span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="1">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="2">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="3">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="4">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="5">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star-label">很满意</span>
+                    </div>
+                </div>
+            </div>
+            <div class="rating-section">
+                <p>医生使用负担：</p>
+                <div class="star-rating" data-rating-type="doctor_burden">
+                    <div class="star-container">
+                        <span class="star-label">很难使用</span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="1">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="2">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="3">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="4">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star" data-rating="5">&#9733;</span>
+                        <span class="star-label"></span>
+                    </div>
+                    <div class="star-container">
+                        <span class="star-label">很好用</span>
+                    </div>
+                </div>
+            </div>
+            <div class="feedback-suggestion">
+                <p>改进建议：</p>
+                <textarea id="feedback-suggestion-input" placeholder="请输入您的改进建议..."></textarea>
+                <button id="submit-feedback-btn">提交反馈</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const messages = document.getElementById('messages');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const recordBtn = document.getElementById('record-btn');
+        const newConversationBtn = document.getElementById('new-conversation-btn');
+        const conversationList = document.getElementById('conversation-list');
+        const assistantOutput = document.getElementById('assistant-output');
+        const ragKnowledgeDiv = document.getElementById('rag-knowledge');
+
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioBlob;
+        let conversations = JSON.parse(localStorage.getItem('conversations')) || [];
+        let currentConversationId;
+        let originalMessage;
+
+        let doctorMediaRecorder;
+        let doctorAudioChunks = [];
+        let doctorAudioBlob;
+
+        let backgroundAudioBlob;
+        let backgroundAudioChunks = [];
+        let isRecording = false;
+
+        let currentScene = 'outpatient'; 
+
+        document.getElementById('toggle-switch').addEventListener('click', () => {
+            const toggle = document.getElementById('toggle-switch');
+            toggle.classList.toggle('active');
+            currentScene = toggle.classList.contains('active') ? 'ward' : 'outpatient';
+        });
+
+        const backgroundRecordBtn = document.getElementById('background-record-btn');
+
+        backgroundRecordBtn.addEventListener('click', async () => {
+            if (!isRecording) {
+                // 开始背景录制
+                backgroundAudioChunks = [];
+                backgroundRecordBtn.textContent = '收集完成';
+
+                try {
+                    // 获取用户媒体流
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                    // 创建媒体录制器
+                    mediaRecorder = new MediaRecorder(stream);
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            backgroundAudioChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        backgroundAudioBlob = new Blob(backgroundAudioChunks, { type: 'audio/webm' });
+                        submitSummary(); // 录制完成后提交总结
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+
+                } catch (error) {
+                    console.error('获取用户媒体失败:', error);
+                    backgroundRecordBtn.disabled = false;
+                }
+            } else {
+                // 停止背景录制
+                if (mediaRecorder) {
+                    mediaRecorder.stop();
+                    isRecording = false;
+                }
+            }
+        });
+
+        async function submitSummary() {
+            backgroundRecordBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('audio', backgroundAudioBlob, 'background.webm');
+            formData.append('conversation_id', currentConversationId);
+
+            try {
+                const response = await fetch('/generate-summary', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                const summary = data.summary;
+                assistantOutput.textContent = `总结：${summary}`;
+
+                // 将总结作为对话的起点
+                const selectedConvo = conversations.find(convo => convo.id === currentConversationId);
+                selectedConvo.messages.push({ role: 'user', content: summary });
+                saveConversation(currentConversationId, 'user', summary, 'summary');
+
+                // 启用对话功能
+                recordBtn.disabled = false;
+                doctorRecordBtn.disabled = false;
+                sendBtn.disabled = false;
+                userInput.disabled = false;
+                
+                showFollowUpQuestion();
+
+                // 更新按钮状态
+                backgroundRecordBtn.textContent = '背景录制';
+                backgroundRecordBtn.disabled = false;
+            } catch (err) {
+                assistantOutput.textContent = `生成总结失败：${err.message}`;
+                backgroundRecordBtn.disabled = false;
+            }
+        }
+
+        const patientAgeInput = document.getElementById('patient-age');
+        const patientGenderInput = document.getElementById('patient-gender');
+        const patientNameInput = document.getElementById('patient-name');
+
+        const doctorRecordBtn = document.getElementById('doctor-record-btn');
+
+        function checkDemographicInput() {
+            const name = patientNameInput.value.trim();
+            const age = patientAgeInput.value.trim();
+            const gender = patientGenderInput.value.trim();
+            if (name && age && gender) {
+                recordBtn.disabled = false;
+                doctorRecordBtn.disabled = false;
+            } else {
+                recordBtn.disabled = true;
+                doctorRecordBtn.disabled = true;
+            }
+        }
+
+        patientNameInput.addEventListener('input', checkDemographicInput);
+        patientAgeInput.addEventListener('input', checkDemographicInput);
+        patientGenderInput.addEventListener('change', checkDemographicInput);
+
+        function saveConversation(conversationId, role, content, dialogueType) {
+            fetch('/save-conversation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    conversation_id: conversationId,
+                    role: role,
+                    content: content,
+                    dialogue_type: dialogueType,
+                    scene_type: currentScene
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log('对话内容已保存:', data))
+            .catch(err => console.error('保存对话内容失败:', err));
+        }
+
+        function saveDemographicInfo(conversationId, name, age, gender) {
+            fetch('/save-demographic-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    conversation_id: conversationId,
+                    name: name,
+                    age: age,
+                    gender: gender
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log('人口学信息已保存:', data))
+            .catch(err => console.error('保存人口学信息失败:', err));
+        }
+
+        function loadConversations() {
+            conversationList.innerHTML = '';
+            conversations.forEach(convo => {
+                const li = document.createElement('li');
+                li.textContent = convo.name || `对话 ${convo.id.substring(0, 8)}`;
+                li.dataset.id = convo.id;
+                li.classList.toggle('active', currentConversationId === convo.id);
+                li.addEventListener('click', () => selectConversation(convo.id));
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = '删除';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteConversation(convo.id);
+                });
+
+                li.appendChild(deleteBtn);
+                conversationList.appendChild(li);
+            });
+        }
+
+        function deleteConversation(id) {
+            conversations = conversations.filter(convo => convo.id !== id);
+            localStorage.setItem('conversations', JSON.stringify(conversations));
+            loadConversations();
+
+            if (currentConversationId === id) {
+                currentConversationId = null;
+                messages.innerHTML = '';
+                patientAgeInput.value = '';
+                patientGenderInput.value = '';
+                document.getElementById('conversation-title').textContent = '';
+            }
+        }
+
+        function selectConversation(id) {
+            currentConversationId = id;
+            const selectedConvo = conversations.find(convo => convo.id === id);
+            if (selectedConvo) {
+                messages.innerHTML = '';
+                selectedConvo.messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.role}`;
+                    div.textContent = msg.content;
+                    messages.appendChild(div);
+                });
+                messages.scrollTop = messages.scrollHeight;
+
+                fetch('/get-demographic-info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ conversation_id: id })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        patientAgeInput.value = data.age;
+                        patientGenderInput.value = data.gender;
+                    } else {
+                        patientAgeInput.value = '';
+                        patientGenderInput.value = '';
+                    }
+                })
+                .catch(err => {
+                    console.error('获取人口学信息失败:', err);
+                    patientAgeInput.value = '';
+                    patientGenderInput.value = '';
+                });
+
+                document.getElementById('conversation-title').textContent = `当前对话: ${selectedConvo.name || '未命名对话'}`;
+            } else {
+                patientAgeInput.value = '';
+                patientGenderInput.value = '';
+                document.getElementById('conversation-title').textContent = '';
+            }
+        }
+
+        newConversationBtn.addEventListener('click', () => {
+            const newConvo = {
+                id: Date.now().toString(),
+                name: `对话 ${Date.now().toString().substr(-8)}`,
+                messages: [],
+                scene_type: currentScene
+            };
+            conversations.push(newConvo);
+            localStorage.setItem('conversations', JSON.stringify(conversations));
+            loadConversations();
+            selectConversation(newConvo.id);
+        });
+
+        window.addEventListener('load', () => {
+            loadConversations();
+            if (conversations.length > 0) {
+                selectConversation(conversations[0].id);
+            }
+        });
+
+        recordBtn.addEventListener('click', async () => {
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                audioChunks = [];
+                recordBtn.textContent = '停止录音';
+
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    recordBtn.textContent = '开始录音';
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    const audioFilename = `audio_${timestamp}.webm`;
+
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob, audioFilename);
+
+                    fetch('/transcribe', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.transcription) {
+                            userInput.value = data.transcription;
+                            userInput.disabled = false;
+                            sendBtn.disabled = false;
+                            assistantOutput.textContent = '转写完成，请确认或修改内容。';
+                        } else {
+                            assistantOutput.textContent = '转写失败：后端未返回转写内容。';
+                        }
+                    })
+                    .catch(err => {
+                        assistantOutput.textContent = `转写失败：${err.message}`;
+                    });
+                };
+
+                mediaRecorder.start();
+            } else {
+                mediaRecorder.stop();
+            }
+        });
+
+        doctorRecordBtn.addEventListener('click', async () => {
+            if (!doctorMediaRecorder || doctorMediaRecorder.state === 'inactive') {
+                doctorAudioChunks = [];
+                doctorRecordBtn.textContent = '停止医生录音';
+        
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                doctorMediaRecorder = new MediaRecorder(stream);
+        
+                doctorMediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        doctorAudioChunks.push(event.data);
+                    }
+                };
+        
+                doctorMediaRecorder.onstop = async () => {
+                    doctorRecordBtn.textContent = '开始医生录音';
+                    doctorAudioBlob = new Blob(doctorAudioChunks, { type: 'audio/webm' });
+        
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    const audioFilename = `doctor_audio_${timestamp}.webm`;
+        
+                    const formData = new FormData();
+                    formData.append('audio', doctorAudioBlob, audioFilename);
+        
+                    try {
+                        const response = await fetch('/transcribe', {
+                            method: 'POST',
+                            body: formData
+                        });
+        
+                        const data = await response.json();
+                        if (data.transcription) {
+                            // 将医生的录音转写内容作为 assistant 的消息加入对话
+                            appendMessage('assistant', data.transcription);
+                            saveConversation(currentConversationId, 'assistant', data.transcription, 'dolphin');
+                        } else {
+                            assistantOutput.textContent = '医生录音转写失败：后端未返回转写内容。';
+                        }
+                    } catch (err) {
+                        assistantOutput.textContent = `医生录音转写失败：${err.message}`;
+                    }
+                };
+        
+                doctorMediaRecorder.start();
+            } else {
+                doctorMediaRecorder.stop();
+            }
+        });
+
+        sendBtn.addEventListener('click', async () => {
+            let dialogueType = "dolphin";
+            const message = userInput.value.trim();
+            const name = patientNameInput.value.trim(); 
+            const age = patientAgeInput.value.trim();
+            const gender = patientGenderInput.value.trim();
+            let originalMessage
+
+            if (!name || !age || !gender){
+                alert("请填写姓名、年龄和性别后再发送消息。");
+                return;
+            }
+
+            await saveDemographicInfo(currentConversationId, name, age, gender);
+
+            if (!message || !audioBlob) {
+                assistantOutput.textContent = '请完成录音并输入文本后再发送。';
+                return;
+            }
+            originalMessage = message;
+            const selectedConvo = conversations.find(convo => convo.id === currentConversationId);
+            if (selectedConvo) {
+                // 移除双盲测试逻辑，直接使用 dolphin 模式
+                selectedConvo.dialogue_type = dialogueType;
+                localStorage.setItem('conversations', JSON.stringify(conversations));
+            }
+
+            selectedConvo.messages.push({ role: 'user', content: message });
+            saveConversation(currentConversationId, 'user', message, dialogueType);
+            appendMessage('user', message);
+            userInput.value = '';
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+            formData.append('message', message);
+            formData.append('conversation_id', currentConversationId);
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                console.log("后端返回的数据:", data);
+
+                if (data.status === "success" && data.model_a_output) {
+                    appendModelAOutput(data.model_a_output, originalMessage, data.dialogue_type);
+                } else {
+                    assistantOutput.textContent = `错误：${data.error || '未知错误'}`;
+                }
+            } catch (err) {
+                assistantOutput.textContent = `请求失败：${err.message}`;
+            }
+        });
+
+        function appendModelAOutput(content, originalMessage, dialogueType) {
+            const div = document.createElement('div');
+            div.className = 'model-a-message';
+            div.innerHTML = `
+                <strong>模型A解释：</strong>
+                <div contenteditable="true">${content.replace(/\n/g, '<br>')}</div>
+                <div class="feedback-buttons">
+                    <button class="feedback-btn like-btn">👍</button>
+                    <button class="feedback-btn dislike-btn">👎</button>
+                </div>
+            `;
+
+            saveModelAOutput(currentConversationId, content);
+
+            const likeBtn = div.querySelector('.like-btn');
+            const dislikeBtn = div.querySelector('.dislike-btn');
+            const editableContent = div.querySelector('div[contenteditable="true"]');
+
+            likeBtn.addEventListener('click', async () => {
+                const updatedContent = editableContent.innerText;
+                const response = await fetch('/generate-response', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        conversation_id: currentConversationId,
+                        model_a_output: updatedContent,
+                        feedback: 'like',
+                        original_message: originalMessage
+                    })
+                });
+
+                const data = await response.json();
+                if (data.model_b_output) {
+                    appendMessage('assistant', `模型B对话: ${data.model_b_output}`);
+                } else {
+                    assistantOutput.textContent = `错误：${data.error || '未知错误'}`;
+                }
+            });
+
+            dislikeBtn.addEventListener('click', async () => {
+                const updatedContent = editableContent.innerText;
+                const response = await fetch('/generate-response', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        conversation_id: currentConversationId,
+                        model_a_output: updatedContent,
+                        feedback: 'dislike',
+                        original_message: originalMessage
+                    })
+                });
+
+                const data = await response.json();
+                if (data.model_a_output) {
+                    editableContent.innerHTML = data.model_a_output.replace(/\n/g, '<br>');
+                } else {
+                    assistantOutput.textContent = `错误：${data.error || '未知错误'}`;
+                }
+            });
+
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function showFollowUpQuestion() {
+            const followUpQuestion = "您对病情还有什么不太清楚的地方吗？";
+            appendMessage('assistant', followUpQuestion, 'follow-up');
+        }
+
+        function appendMessage(role, content) {
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            div.textContent = content;
+
+            if (role === 'assistant') {
+                const feedbackButtons = document.createElement('div');
+                feedbackButtons.className = 'feedback-buttons';
+                feedbackButtons.innerHTML = `
+                    <button class="feedback-btn like-btn">👍</button>
+                    <button class="feedback-btn dislike-btn">👎</button>
+                `;
+                div.appendChild(feedbackButtons);
+
+                const likeBtn = feedbackButtons.querySelector('.like-btn');
+                const dislikeBtn = feedbackButtons.querySelector('.dislike-btn');
+
+                likeBtn.addEventListener('click', () => {
+                    saveFeedback(currentConversationId, content, 'like');
+                    likeBtn.disabled = true;
+                    dislikeBtn.disabled = true;
+                });
+
+                dislikeBtn.addEventListener('click', () => {
+                    saveFeedback(currentConversationId, content, 'dislike');
+                    likeBtn.disabled = true;
+                    dislikeBtn.disabled = true;
+                });
+            }
+
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function saveFeedback(conversationId, content, feedback) {
+            fetch('/save-feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    conversation_id: conversationId,
+                    content: content,
+                    feedback: feedback
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log('用户评价已保存:', data))
+            .catch(err => console.error('保存用户评价失败:', err));
+        }
+
+        function saveModelAOutput(conversationId, content) {
+            fetch('/save-model-a-output', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    conversation_id: conversationId,
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log('模型A解释已保存:', data))
+            .catch(err => console.error('保存模型A解释失败:', err));
+        }
+
+        function saveRating(conversationId, ratingType, rating) {
+            fetch('/save-rating', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    conversation_id: conversationId,
+                    rating_type: ratingType,
+                    rating: rating
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log('评分已保存:', data))
+            .catch(err => console.error('保存评分失败:', err));
+        }
+        
+        document.querySelectorAll('.star-rating').forEach(starRating => {
+            const ratingType = starRating.getAttribute('data-rating-type');
+            const stars = starRating.querySelectorAll('.star');
+            let currentRating = 0;
+        
+            stars.forEach((star, index) => {
+                star.addEventListener('mouseover', () => {
+                    stars.forEach(s => s.classList.remove('active'));
+                    for (let i = 0; i <= index; i++) {
+                        stars[i].classList.add('active');
+                    }
+                });
+        
+                star.addEventListener('mouseout', () => {
+                    stars.forEach(s => s.classList.remove('active'));
+                });
+        
+                star.addEventListener('click', () => {
+                    currentRating = index + 1;
+                    saveRating(currentConversationId, ratingType, currentRating);
+                    stars.forEach(s => s.classList.remove('active')); // 点击后清除高亮
+                });
+            });
+        });
+
+        // 绑定评分点击事件
+        const ratingSections = document.querySelectorAll('.star-rating');
+        ratingSections.forEach(section => {
+            const stars = section.querySelectorAll('.star');
+            const ratingType = section.getAttribute('data-rating-type');
+        
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const rating = star.getAttribute('data-rating');
+                    stars.forEach(s => s.classList.remove('active'));
+                    star.classList.add('active');
+                    saveRating(currentConversationId, ratingType, rating);
+                });
+            });
+        });
+
+        // 保存改进建议
+        function saveSuggestion(conversationId, suggestion) {
+            fetch('/save-suggestion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    conversation_id: conversationId,
+                    suggestion: suggestion
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log('改进建议已保存:', data))
+            .catch(err => console.error('保存改进建议失败:', err));
+        }
+
+        // 绑定提交反馈按钮点击事件
+        const submitFeedbackBtn = document.getElementById('submit-feedback-btn');
+        const feedbackSuggestionInput = document.getElementById('feedback-suggestion-input');
+
+        submitFeedbackBtn.addEventListener('click', () => {
+            const suggestion = feedbackSuggestionInput.value.trim();
+            if (suggestion) {
+                saveSuggestion(currentConversationId, suggestion);
+                feedbackSuggestionInput.value = '';
+                alert('改进建议已提交！');
+            } else {
+                alert('请输入改进建议后再提交。');
+            }
+        });
+    </script>
+</body>
+</html>
