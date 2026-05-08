@@ -113,9 +113,8 @@ python reproducible_sample_package/scripts/run_sample_pipeline.py \
 The default mode uses a deterministic offline template responder so that users
 can inspect the preprocessing, knowledge retrieval, reasoning-path construction,
 and response-generation workflow without a private LLM key. Users with a
-compatible OpenAI-style or ChatAnywhere-style endpoint can set the documented
-environment variables and rerun the script with `--llm-provider
-openai-compatible`.
+compatible OpenAI-style endpoint can set the documented environment variables
+and rerun the script with `--llm-provider openai-compatible`.
 
 This sample package is intended to reproduce the public workflow and request
 format, not the manuscript's clinical performance estimates. Raw clinical
@@ -143,11 +142,16 @@ Audio Requirements:
 | SNR | ≥40 dB |
 	
 ## API Documentation
-Dolphin project utilizes ChatAnywhere API to call the foundational large language models.
+Dolphin uses the OpenAI chat completions format to call foundational large
+language models. Set `OPENAI_API_KEY` before inference. Optional environment
+variables include `OPENAI_MODEL` (default: `gpt-4o-mini`) and `OPENAI_BASE_URL`
+(default: `https://api.openai.com/v1`) for OpenAI-compatible deployments.
 ~~~
-def call_chatanywhere(self, input_text, context=[]):
+from openai import OpenAI
+
+def call_openai(self, input_text, context=None):
         """
-        Call ChatAnywhere API
+        Call an OpenAI-compatible chat completions API.
         
         Parameters:
             input_text: Input text
@@ -156,38 +160,32 @@ def call_chatanywhere(self, input_text, context=[]):
         Returns:
             API response text
         """
-        try:
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': '/api-key',
-            }
+        context = context or []
+        api_key = os.environ.get("OPENAI_API_KEY") or self.config.get("OPENAI_API_KEY", "")
+        base_url = os.environ.get("OPENAI_BASE_URL") or self.config.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        model = os.environ.get("OPENAI_MODEL") or self.config.get("OPENAI_MODEL", "gpt-4o-mini")
 
-            # Build message format
+        if not api_key:
+            print("OpenAI API key is not configured. Set OPENAI_API_KEY before running LLM inference.")
+            return None
+
+        try:
+            client = OpenAI(api_key=api_key, base_url=base_url, timeout=15.0)
             messages = [{"role": msg["role"], "content": msg["content"]} for msg in context]
             messages.append({"role": "user", "content": input_text})
 
-            data = {
-                "model": "deepseek-chat", #model name, such as "gpt-4o", "gpt-4o-mini", "deepseek-r1", etc.
-                "messages": messages,
-                "temperature": 0.7
-            }
-
-            response = requests.post(
-                'https://api.chatanywhere.tech/v1/chat/completions',
-                headers=headers,
-                json=data,
-                timeout=15
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.7
             )
 
-            if response.status_code == 200:
-                return response.json()['choices'][0]['message']['content'].strip()
-            print(f"API call failed, status code: {response.status_code}")
-            return None
+            return response.choices[0].message.content.strip()
         except Exception as e:
-            print(f"Error calling ChatAnywhere API: {e}")
+            print(f"Error calling OpenAI-compatible API: {e}")
             return None
 ~~~
-Before using it, please fill in your own API key or use your own method to access the foundational large language model.
+Before using it, please configure your own API key or compatible model endpoint.
 
 ## Citation
 If using this work in academic research, please cite:

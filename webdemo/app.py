@@ -12,7 +12,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 from openai import OpenAI
 from sqlalchemy import JSON
 import config
-import requests
 
 
 rag_model_path = config.RAG_MODEL_PATH
@@ -20,7 +19,11 @@ rag_knowledge_path = config.RAG_KNOWLEDGE_PATH
 audio_model_path = config.AUDIO_MODEL_PATH
 audio_save_path = config.AUDIO_SAVE_PATH
 db_path = config.DB_PATH
-api_key = config.API_KEY
+legacy_api_key = getattr(config, "API_KEY", "")
+openai_api_key = os.environ.get("OPENAI_API_KEY", legacy_api_key)
+openai_base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+openai_model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+deepseek_api_key = os.environ.get("DEEPSEEK_API_KEY", legacy_api_key)
 
 app = Flask(__name__, template_folder=os.path.join(os.getcwd(), 'templates'))
 UPLOAD_FOLDER = config.AUDIO_SAVE_PATH
@@ -100,8 +103,9 @@ class BackgroundAudioRecord(db.Model):
 with app.app_context():
     db.create_all()
 
-# 初始化 DeepSeek 客户端
-deepseek_client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+# 初始化 LLM 客户端
+openai_client = OpenAI(api_key=openai_api_key, base_url=openai_base_url, timeout=15.0) if openai_api_key else None
+deepseek_client = OpenAI(api_key=deepseek_api_key, base_url="https://api.deepseek.com")
 
 # 加载情感模型与音频转录模型
 emotion_model = AutoModel(model="iic/emotion2vec_plus_large", disable_update=True)
@@ -181,36 +185,26 @@ def get_high_knowledge(query, knowledge, k):
 knowledge_embeddings = precompute_knowledge_embeddings(knowledge)
 print(f"已完成知识库向量转换")
 
-def call_chatanywhere(input_text, context=[]):
-    try:
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer sk-yhGP21PPtDMiB8ptAow3zDn3pHQk46j5D2N34iXyspqvfCOG',
-        }
+def call_openai(input_text, context=None):
+    context = context or []
+    if openai_client is None:
+        print("OpenAI API key is not configured. Set OPENAI_API_KEY before running LLM inference.")
+        return None
 
+    try:
         # 构建消息格式
         messages = [{"role": msg["role"], "content": msg["content"]} for msg in context]
         messages.append({"role": "user", "content": input_text})
 
-        data = {
-            "model": "gpt-4o-mini",
-            "messages": messages,
-            "temperature": 0.7
-        }
-
-        response = requests.post(
-            'https://api.chatanywhere.tech/v1/chat/completions',
-            headers=headers,
-            json=data,
-            timeout=15
+        response = openai_client.chat.completions.create(
+            model=openai_model,
+            messages=messages,
+            temperature=0.7
         )
 
-        if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content'].strip()
-        print(f"API调用失败，状态码：{response.status_code}")
-        return None
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"调用ChatAnywhere API时发生错误：{e}")
+        print(f"调用 OpenAI-compatible API 时发生错误：{e}")
         return None
 
 @app.route('/')
@@ -349,7 +343,7 @@ def generate_summary():
     # 转录音频
     transcription = transcribe_audio(audio_path)
     
-    # 调用 chatanywhere API 生成总结
+    # 调用 OpenAI-compatible API 生成总结
     context = [{
         "role": "system",
         "content": """
@@ -357,7 +351,7 @@ def generate_summary():
         """
     }]
     
-    summary = call_chatanywhere(f"音频内容: {transcription}", context=context)
+    summary = call_openai(f"音频内容: {transcription}", context=context)
     
     if not summary:
         return jsonify({"error": "生成总结失败"}), 500
@@ -611,7 +605,7 @@ def chat():
     }]
     
     # 修改这里：统一使用带情感分析的 dolphin 模式
-    a1 = call_chatanywhere(f"背景总结: {summary}，患者内容: {message}, 情感: {emotions}", context=context_a)
+    a1 = call_openai(f"背景总结: {summary}，患者内容: {message}, 情感: {emotions}", context=context_a)
 
     new_audio_record = AudioRecord(
         conversation_id=conversation_id,
@@ -661,7 +655,7 @@ def generate_response():
         ]
         context_b.extend(messages)
 
-        b1 = call_chatanywhere(f"患者说话内容: {original_message}", context=context_b)
+        b1 = call_openai(f"患者说话内容: {original_message}", context=context_b)
 
         new_assistant_message = Conversation(
             conversation_id=conversation_id,
@@ -684,7 +678,7 @@ def generate_response():
         }]
         context_a.extend(messages)
 
-        a1 = call_chatanywhere(f"背景总结: {summary};患者内容: {model_a_output}", context=context_a)
+        a1 = call_openai(f"背景总结: {summary};患者内容: {model_a_output}", context=context_a)
 
         return jsonify({
             "model_a_output": a1

@@ -7,13 +7,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
-import requests
 import librosa
 import numpy as np
 import opensmile
 import soundfile as sf
 import tempfile
 from transformers import ClapModel, ClapProcessor
+from openai import OpenAI
 
 # Predefined constants
 EMOTIONS = ["anger", "disgust", "fear", "happiness", "sadness", "surprise", "neutral"]
@@ -407,7 +407,7 @@ class DolphinCore:
         input_text = f"Background summary: {summary}\nPatient content: {text}\nEmotions: {emotions}" if summary else f"Patient content: {text}\nEmotions: {emotions}"
 
         try:
-            return self.call_chatanywhere(input_text, context=context)
+            return self.call_openai(input_text, context=context)
         except Exception as e:
             print(f"Model A analysis error: {e}")
             return None
@@ -421,35 +421,36 @@ class DolphinCore:
             {"role": "user", "content": f"Relevant knowledge: {knowledge}"}
         ]
         try:
-            return self.call_chatanywhere(text, context=context)
+            return self.call_openai(text, context=context)
         except Exception as e:
             print(f"Model B response generation error: {e}")
             return None
 
-    def call_chatanywhere(self, input_text, context=[]):
-        """Call external LLM API (ChatAnywhere) with retry and error handling."""
+    def call_openai(self, input_text, context=None):
+        """Call an OpenAI-compatible chat completions API."""
+        context = context or []
+        api_key = os.environ.get("OPENAI_API_KEY") or self.config.get("OPENAI_API_KEY", "")
+        base_url = os.environ.get("OPENAI_BASE_URL") or self.config.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        model = os.environ.get("OPENAI_MODEL") or self.config.get("OPENAI_MODEL", "gpt-4o-mini")
+
+        if not api_key:
+            print("OpenAI API key is not configured. Set OPENAI_API_KEY before running LLM inference.")
+            return None
+
         try:
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer /api-key'  # fill in your own api-key
-            }
+            client = OpenAI(api_key=api_key, base_url=base_url, timeout=15.0)
             messages = [{"role": msg["role"], "content": msg["content"]} for msg in context]
             messages.append({"role": "user", "content": input_text})
-            data = {"model": "gpt-4o-mini", "messages": messages, "temperature": 0.7}
 
-            response = requests.post(
-                'https://api.chatanywhere.tech/v1/chat/completions',
-                headers=headers,
-                json=data,
-                timeout=15
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.7
             )
 
-            if response.status_code == 200:
-                return response.json()['choices'][0]['message']['content'].strip()
-            print(f"API call failed, status code: {response.status_code}, response: {response.text}")
-            return None
+            return response.choices[0].message.content.strip()
         except Exception as e:
-            print(f"Error calling ChatAnywhere API: {e}")
+            print(f"Error calling OpenAI-compatible API: {e}")
             return None
 
     def process_conversation(self, audio_path, text_input=None, summary=None):
@@ -495,7 +496,10 @@ if __name__ == "__main__":
         'AUDIO_MODEL_PATH': '',
         'AUDIO_SAVE_PATH': '',
         'DOLPHIN_MODEL_PATH': '',
-        'CLAP_MODEL_PATH': ''
+        'CLAP_MODEL_PATH': '',
+        'OPENAI_API_KEY': os.environ.get('OPENAI_API_KEY', ''),
+        'OPENAI_BASE_URL': os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+        'OPENAI_MODEL': os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
     }
 
     dolphin = DolphinCore(config)
