@@ -2,3 +2,4 @@ temp/
 *.log
 __pycache__/
 *.py[cod]
+webdemo/config.py
