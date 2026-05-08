@@ -95,6 +95,35 @@ After finishing deployment, you can try the webdemo on the local web page 127.0.
 
 Note: ffmpeg is required for this project.
 
+## Reproducible Sample Package
+
+To support workflow-level reproducibility while protecting clinical privacy, we
+provide a public sample package in `reproducible_sample_package/`. The package
+contains deidentified synthetic conversation/audio examples, a sample
+site-specific knowledge base, prompt templates, model/pipeline configuration,
+and a runnable inference script.
+
+Run the sample workflow from this directory:
+~~~
+python reproducible_sample_package/scripts/run_sample_pipeline.py \
+  --config reproducible_sample_package/configs/sample_config.json \
+  --output reproducible_sample_package/outputs/sample_outputs.jsonl
+~~~
+
+The default mode uses a deterministic offline template responder so that users
+can inspect the preprocessing, knowledge retrieval, reasoning-path construction,
+and response-generation workflow without a private LLM key. Users with a
+compatible OpenAI-style or ChatAnywhere-style endpoint can set the documented
+environment variables and rerun the script with `--llm-provider
+openai-compatible`.
+
+This sample package is intended to reproduce the public workflow and request
+format, not the manuscript's clinical performance estimates. Raw clinical
+conversation/audio data, the production site-specific knowledge base, private
+deployment credentials, and individual-level trial data are not publicly
+released because they contain sensitive clinical or institution-specific
+information.
+
 ## Data Preparation
 RAG Knowledge Base Format (.xlsx or .csv):
 

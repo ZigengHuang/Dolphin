@@ -1,0 +1,16 @@
+{
+  "package_name": "Dolphin reproducible sample package",
+  "sample_cases_path": "../sample_data/conversations/sample_cases.jsonl",
+  "knowledge_base_path": "../knowledge_base/sample_knowledge_base.csv",
+  "reasoning_prompt_path": "../prompts/reasoning_path_prompt.txt",
+  "response_prompt_path": "../prompts/response_prompt.txt",
+  "top_k_knowledge": 2,
+  "template_temperature": 0.0,
+  "privacy_note": "Sample inputs are synthetic/deidentified and are not part of the clinical study dataset.",
+  "llm": {
+    "provider": "template",
+    "endpoint_env": "DOLPHIN_SAMPLE_LLM_ENDPOINT",
+    "model_env": "DOLPHIN_SAMPLE_LLM_MODEL",
+    "api_key_env": "DOLPHIN_SAMPLE_LLM_API_KEY"
+  }
+}
