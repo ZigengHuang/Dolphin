@@ -136,7 +136,18 @@ def infer_emotion(case: dict, audio_features: dict) -> dict:
     total = sum(math.exp(value) for value in scores.values())
     probabilities = {emotion: round(math.exp(value) / total, 4) for emotion, value in scores.items()}
     predicted = max(probabilities, key=probabilities.get)
-    return {"predicted_emotion": predicted, "emotion_probabilities": probabilities}
+    top3 = [
+        {"emotion": emotion, "probability": probability}
+        for emotion, probability in sorted(probabilities.items(), key=lambda item: item[1], reverse=True)[:3]
+    ]
+    return {"predicted_emotion": predicted, "top3_emotions": top3, "emotion_probabilities": probabilities}
+
+
+def format_top3_emotions(emotion_result: dict) -> str:
+    return ", ".join(
+        f"{item['emotion']}: {item['probability']:.4f}"
+        for item in emotion_result.get("top3_emotions", [])
+    )
 
 
 def format_knowledge(rows: list[dict]) -> str:
@@ -149,10 +160,10 @@ def format_knowledge(rows: list[dict]) -> str:
 
 
 def build_reasoning_path(case: dict, audio_summary: str, retrieved_knowledge: str, emotion_result: dict) -> str:
-    emotion = emotion_result["predicted_emotion"]
+    top3_emotions = format_top3_emotions(emotion_result)
     return (
-        f"Emotion Interpretation: The sample pipeline predicts {emotion} as the dominant affective state, "
-        f"using text cues together with simple audio descriptors ({audio_summary}).\n"
+        "Emotion Interpretation: The sample pipeline provides the top 3 emotion probabilities "
+        f"({top3_emotions}) using text cues together with simple audio descriptors ({audio_summary}).\n"
         f"Semantic Interpretation: The patient education need is: {case.get('communication_goal', '')}\n"
         "Response Guideline: Acknowledge the concern first, provide concise education grounded in the "
         "retrieved knowledge, avoid individualized medical decisions, and direct safety-sensitive questions "
@@ -224,6 +235,7 @@ def run_pipeline(config_path: Path, output_path: Path, llm_provider: str) -> Non
             speaker_query=case["speaker_query"],
             transcript=case["transcript"],
             audio_summary=audio_summary,
+            top3_emotions=format_top3_emotions(emotion_result),
             retrieved_knowledge=retrieved_knowledge,
         )
         reasoning_path = build_reasoning_path(case, audio_summary, retrieved_knowledge, emotion_result)
@@ -264,13 +276,9 @@ def run_pipeline(config_path: Path, output_path: Path, llm_provider: str) -> Non
         emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
     print(f"Wrote {len(outputs)} sample outputs to {output_path}")
     print(f"Predicted emotion label counts: {emotion_counts}")
-    print("Softmax emotion probabilities by case:")
+    print("Top 3 softmax emotion probabilities by case:")
     for row in outputs:
-        probabilities = row["emotion_result"]["emotion_probabilities"]
-        compact_probabilities = ", ".join(
-            f"{emotion}={probability:.4f}" for emotion, probability in probabilities.items()
-        )
-        print(f"  {row['case_id']}: {compact_probabilities}")
+        print(f"  {row['case_id']}: {format_top3_emotions(row['emotion_result'])}")
 
 
 def parse_args() -> argparse.Namespace:

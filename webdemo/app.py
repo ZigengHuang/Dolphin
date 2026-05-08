@@ -254,8 +254,13 @@ def process_audio(file_path):
     for item in res:
         labels = item['labels']
         scores = item['scores']
-        return [{"emotion": lbl, "score": scr} for lbl, scr in zip(labels, scores)]
+        emotions = [{"emotion": lbl, "score": round(float(scr), 4)} for lbl, scr in zip(labels, scores)]
+        emotions.sort(key=lambda value: value["score"], reverse=True)
+        return emotions[:3]
     return []
+
+def format_top3_emotions(emotions):
+    return "，".join([f"{item['emotion']}: {item['score']:.4f}" for item in emotions[:3]])
 
 def call_deepseek(input_text, role="user", context=[]):
     try:
@@ -604,8 +609,10 @@ def chat():
         """
     }]
     
-    # 修改这里：统一使用带情感分析的 dolphin 模式
-    a1 = call_openai(f"背景总结: {summary}，患者内容: {message}, 情感: {emotions}", context=context_a)
+    top3_emotions = format_top3_emotions(emotions)
+
+    # 修改这里：统一使用带 Top 3 情感概率的 dolphin 模式
+    a1 = call_openai(f"背景总结: {summary}，患者内容: {message}, Top 3情感及概率: {top3_emotions}", context=context_a)
 
     new_audio_record = AudioRecord(
         conversation_id=conversation_id,

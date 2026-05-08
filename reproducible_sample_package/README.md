@@ -52,9 +52,10 @@ executed without a private LLM key. The script performs the following steps:
 1. loads sample conversation/audio pairs;
 2. extracts simple audio descriptors from the paired WAV files;
 3. retrieves relevant entries from the sample knowledge base;
-4. builds a structured reasoning path;
-5. generates a patient-education response;
-6. writes JSONL outputs for inspection.
+4. extracts the top 3 emotion probabilities for downstream prompting;
+5. builds a structured reasoning path using those top 3 emotion probabilities;
+6. generates a patient-education response;
+7. writes JSONL outputs for inspection.
 
 ## Optional OpenAI-Compatible LLM Mode
 

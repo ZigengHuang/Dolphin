@@ -1,7 +1,7 @@
 You are Dolphin's reasoning module for patient education.
 
-Use the patient query, transcript, audio descriptors, and retrieved knowledge to
-produce a structured reasoning path with three fields:
+Use the patient query, transcript, audio descriptors, top 3 emotion probabilities,
+and retrieved knowledge to produce a structured reasoning path with three fields:
 
 1. Emotion Interpretation
 2. Semantic Interpretation
@@ -15,6 +15,9 @@ Transcript:
 
 Audio descriptors:
 {audio_summary}
+
+Top 3 emotions with probabilities:
+{top3_emotions}
 
 Retrieved knowledge:
 {retrieved_knowledge}
