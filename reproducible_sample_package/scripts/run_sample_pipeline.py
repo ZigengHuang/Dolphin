@@ -263,7 +263,14 @@ def run_pipeline(config_path: Path, output_path: Path, llm_provider: str) -> Non
         emotion = row["emotion_result"]["predicted_emotion"]
         emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
     print(f"Wrote {len(outputs)} sample outputs to {output_path}")
-    print(f"Predicted emotion distribution: {emotion_counts}")
+    print(f"Predicted emotion label counts: {emotion_counts}")
+    print("Softmax emotion probabilities by case:")
+    for row in outputs:
+        probabilities = row["emotion_result"]["emotion_probabilities"]
+        compact_probabilities = ", ".join(
+            f"{emotion}={probability:.4f}" for emotion, probability in probabilities.items()
+        )
+        print(f"  {row['case_id']}: {compact_probabilities}")
 
 
 def parse_args() -> argparse.Namespace:
