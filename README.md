@@ -101,7 +101,7 @@ To support workflow-level reproducibility while protecting clinical privacy, we
 provide a public sample package in `reproducible_sample_package/`. The package
 contains deidentified synthetic conversation/audio examples, a sample
 site-specific knowledge base, prompt templates, model/pipeline configuration,
-and a runnable inference script.
+and a runnable preprocessing and inference script.
 
 Run the sample workflow from this directory:
 ~~~
@@ -115,6 +115,20 @@ can inspect the preprocessing, knowledge retrieval, reasoning-path construction,
 and response-generation workflow without a private LLM key. Users with a
 compatible OpenAI-style endpoint can set the documented environment variables
 and rerun the script with `--llm-provider openai-compatible`.
+
+The public sample workflow can be run without external credentials in template
+mode. Components that call an external base LLM require an OpenAI-compatible
+endpoint and the environment variables documented below. Production deployment
+also requires local institutional configuration, including the production
+knowledge base, private deployment credentials, local model paths, and
+institution-specific data-governance settings, which are not included in the
+public repository.
+
+Using the included sample inputs, users can reproduce the workflow-level
+pipeline for loading deidentified audio/text examples, extracting simple audio
+descriptors, retrieving entries from the sample knowledge base, constructing
+reasoning and response prompts, generating sample patient-education responses,
+and writing structured JSONL outputs.
 
 This sample package is intended to reproduce the public workflow and request
 format, not the manuscript's clinical performance estimates. Raw clinical
