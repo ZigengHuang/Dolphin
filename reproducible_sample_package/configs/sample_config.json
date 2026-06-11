@@ -6,7 +6,7 @@
   "response_prompt_path": "../prompts/response_prompt.txt",
   "top_k_knowledge": 2,
   "template_temperature": 0.0,
-  "privacy_note": "Sample inputs are synthetic/deidentified and are not part of the clinical study dataset.",
+  "privacy_note": "Sample inputs are deidentified clinical excerpts and generalized text examples for workflow demonstration, not the full clinical study dataset.",
   "llm": {
     "provider": "template",
     "endpoint_env": "DOLPHIN_SAMPLE_LLM_ENDPOINT",

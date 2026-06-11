@@ -6,8 +6,8 @@ support workflow-level reproducibility under clinical privacy constraints.
 
 The package includes:
 
-- deidentified synthetic conversation examples;
-- synthetic audio files paired with the sample conversations;
+- deidentified clinical audio excerpts from the Pain & Sleep Disorders setting;
+- translated and generalized conversation examples paired with the sample audio;
 - a small anonymized site-specific knowledge-base example adapted from
   non-identifying education entries in the local knowledge-base workbook;
 - prompt templates for reasoning-path and response generation;
@@ -18,6 +18,10 @@ The sample data are not part of the clinical study dataset and should not be
 used to reproduce the numerical claims reported in the manuscript. The raw
 clinical conversation/audio data and individual-level trial data remain subject
 to institutional review and signed data access agreements.
+
+The public audio excerpts were screened to remove direct identifiers. The paired
+conversation records provide translated and generalized text fields for workflow
+demonstration rather than verbatim release of full clinical transcripts.
 
 The sample knowledge base excludes hospital contact details, administrative
 workflow entries, patient-level information, and any identifiers. Entries were
@@ -47,7 +51,10 @@ python reproducible_sample_package/scripts/run_sample_pipeline.py \
 ```
 
 The default mode uses a deterministic template responder so the workflow can be
-executed without a private LLM key. The script performs the following steps:
+executed without a private LLM key. These template responses provide stable,
+clinician-perspective approximations of the expected patient-education output;
+OpenAI-compatible LLM outputs may vary while following the same prompt and
+retrieval context. The script performs the following steps:
 
 1. loads sample conversation/audio pairs;
 2. extracts simple audio descriptors from the paired WAV files;

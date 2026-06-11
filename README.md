@@ -99,9 +99,9 @@ Note: ffmpeg is required for this project.
 
 To support workflow-level reproducibility while protecting clinical privacy, we
 provide a public sample package in `reproducible_sample_package/`. The package
-contains deidentified synthetic conversation/audio examples, a sample
-site-specific knowledge base, prompt templates, model/pipeline configuration,
-and a runnable preprocessing and inference script.
+contains deidentified clinical audio excerpts, translated and generalized
+conversation examples, a sample site-specific knowledge base, prompt templates,
+model/pipeline configuration, and a runnable preprocessing and inference script.
 
 Run the sample workflow from this directory:
 ~~~
@@ -112,9 +112,12 @@ python reproducible_sample_package/scripts/run_sample_pipeline.py \
 
 The default mode uses a deterministic offline template responder so that users
 can inspect the preprocessing, knowledge retrieval, reasoning-path construction,
-and response-generation workflow without a private LLM key. Users with a
-compatible OpenAI-style endpoint can set the documented environment variables
-and rerun the script with `--llm-provider openai-compatible`.
+and response-generation workflow without a private LLM key. These template
+responses provide stable clinician-perspective approximations of the expected
+patient-education output. Users with a compatible OpenAI-style endpoint can set
+the documented environment variables and rerun the script with
+`--llm-provider openai-compatible`; LLM-generated wording may vary while using
+the same prompt and retrieval context.
 
 The public sample workflow can be run without external credentials in template
 mode. Components that call an external base LLM require an OpenAI-compatible

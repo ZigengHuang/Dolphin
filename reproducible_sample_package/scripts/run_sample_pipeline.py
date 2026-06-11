@@ -15,11 +15,19 @@ from pathlib import Path
 
 
 EMOTION_KEYWORDS = {
-    "fear": {"worried", "afraid", "anxious", "concerned", "fear", "scared"},
-    "sadness": {"sad", "tired", "hopeless", "upset", "still", "pain"},
-    "surprise": {"forgot", "sudden", "unexpected", "cancel", "missed"},
-    "anger": {"angry", "frustrated", "unfair", "annoyed"},
-    "happiness": {"relieved", "happy", "glad", "better"},
+    "fear": {"worried", "afraid", "anxious", "concerned", "fear", "scared", "担心", "害怕", "焦虑", "怕"},
+    "sadness": {"sad", "tired", "hopeless", "upset", "still", "pain", "痛", "酸痛", "难受", "不舒服", "睡不着", "失眠"},
+    "surprise": {"forgot", "sudden", "unexpected", "cancel", "missed", "突然", "没想到", "怎么", "咋"},
+    "anger": {"angry", "frustrated", "unfair", "annoyed", "生气", "烦", "不满"},
+    "happiness": {"relieved", "happy", "glad", "better", "缓解", "好多了", "开心"},
+}
+
+STOPWORDS = {
+    "the", "and", "that", "this", "with", "will", "would", "could", "should",
+    "whether", "about", "after", "before", "from", "into", "more", "only",
+    "need", "needs", "patient", "patients", "asks", "asked", "feel", "feels",
+    "also", "have", "has", "had", "for", "are", "you", "your", "may", "not",
+    "can", "any", "all", "when", "what", "why", "how", "does", "did", "was",
 }
 
 
@@ -55,21 +63,32 @@ def load_knowledge(path: Path) -> list[dict]:
 
 
 def tokenize(text: str) -> set[str]:
-    return set(re.findall(r"[a-zA-Z0-9]+", text.lower()))
+    return {
+        token
+        for token in re.findall(r"[a-zA-Z0-9]+", text.lower())
+        if len(token) > 2 and token not in STOPWORDS
+    }
 
 
 def retrieve_knowledge(case: dict, knowledge_rows: list[dict], top_k: int) -> list[dict]:
     query_tokens = tokenize(
-        " ".join([case.get("department", ""), case.get("speaker_query", ""), case.get("transcript", "")])
+        " ".join([
+            case.get("department", ""),
+            case.get("speaker_query", ""),
+            case.get("transcript", ""),
+            case.get("communication_goal", ""),
+        ])
     )
     scored = []
     for row in knowledge_rows:
         row_tokens = tokenize(" ".join(row.values()))
         overlap = len(query_tokens & row_tokens)
+        if overlap == 0:
+            continue
         department_bonus = 5 if row.get("department") == case.get("department") else 0
         scored.append((overlap + department_bonus, row))
     scored.sort(key=lambda item: item[0], reverse=True)
-    return [row for score, row in scored[:top_k] if score > 0]
+    return [row for score, row in scored[:top_k]]
 
 
 def read_wav_features(path: Path) -> dict:
@@ -121,7 +140,7 @@ def summarize_audio(features: dict) -> str:
 
 
 def infer_emotion(case: dict, audio_features: dict) -> dict:
-    text = f"{case.get('speaker_query', '')} {case.get('transcript', '')}".lower()
+    text = f"{case.get('speaker_query', '')} {case.get('transcript', '')} {case.get('original_transcription_zh', '')}".lower()
     scores = {emotion: 0.0 for emotion in ["neutral", *EMOTION_KEYWORDS.keys()]}
     for emotion, keywords in EMOTION_KEYWORDS.items():
         scores[emotion] += sum(1.0 for keyword in keywords if keyword in text)
@@ -166,19 +185,52 @@ def build_reasoning_path(case: dict, audio_summary: str, retrieved_knowledge: st
         f"({top3_emotions}) using text cues together with simple audio descriptors ({audio_summary}).\n"
         f"Semantic Interpretation: The patient education need is: {case.get('communication_goal', '')}\n"
         "Response Guideline: Acknowledge the concern first, provide concise education grounded in the "
-        "retrieved knowledge, avoid individualized medical decisions, and direct safety-sensitive questions "
-        "to the local clinical team.\n"
+        "retrieved knowledge, avoid unsupported individualized decisions, and use the clinician's perspective "
+        "when further assessment or immediate reporting of warning signs is needed.\n"
         f"Retrieved Knowledge Used:\n{retrieved_knowledge}"
     )
 
 
 def template_response(case: dict, reasoning_path: str, retrieved_rows: list[dict]) -> str:
-    topic_sentence = retrieved_rows[0]["content"] if retrieved_rows else "Please follow the local care team's guidance."
+    topics = {row.get("topic", "") for row in retrieved_rows}
+
+    if "post-activity soreness" in topics:
+        return (
+            "It is understandable to feel tired and sore after prolonged physical activity; this is common "
+            "when pushing your body beyond its usual routine. Mild muscle soreness often improves with rest, "
+            "gentle movement, and hydration. However, we would want to assess further if the soreness is severe, "
+            "persists beyond a few days, limits your movement, or is accompanied by symptoms like numbness, "
+            "tingling, or weakness. Let us know if any of these occur, or if the discomfort does not ease with "
+            "self-care. Your body's response helps guide what support you may need."
+        )
+
+    if "low-back and leg pain assessment" in topics or "pain warning signs" in topics:
+        return (
+            "I hear you are dealing with discomfort in your lower back, buttock, and thigh; that sounds "
+            "frustrating and uncomfortable. Back pain that extends into the leg can have several possible "
+            "causes, so we will want to assess further. Please pay attention to any changes, especially if "
+            "you notice weakness, numbness, worsening pain, difficulty walking, or changes in bladder or bowel "
+            "control. Let us know right away if any of these occur. For now, avoiding movements or positions "
+            "that clearly worsen the pain may help. We can further evaluate your symptoms and decide the best "
+            "next steps for you."
+        )
+
+    if "insomnia intervention options" in topics or "insomnia symptoms" in topics:
+        return (
+            "I hear how frustrating it can be to struggle with falling asleep. Insomnia often involves trouble "
+            "initiating sleep, along with daytime fatigue or distress. Common approaches to improve sleep include "
+            "relaxation techniques, cognitive strategies, lifestyle adjustments, and clinician-guided treatment "
+            "when appropriate; the best option depends on your specific needs. To start, consider keeping a "
+            "consistent sleep schedule, limiting screen time before bed, and creating a calm bedtime routine. "
+            "If these do not help, we can further evaluate what might work best for you. Please tell us immediately "
+            "if your sleep difficulties worsen or significantly affect your daily life. You are not alone in this, "
+            "and we are here to help."
+        )
+
     return (
-        "I understand why this feels concerning. "
-        f"{topic_sentence} "
-        "Because the safest next step can depend on your exact situation, please contact the clinical team if "
-        "anything is unclear, symptoms worsen, or you need individualized instructions."
+        "I understand why this feels concerning. We can review the symptom pattern, timing, severity, and any "
+        "warning signs together, then decide whether further assessment is needed. Please tell us immediately "
+        "if symptoms worsen, new symptoms appear, or the issue starts to affect your daily activities."
     )
 
 
